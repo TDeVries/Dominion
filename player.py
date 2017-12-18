@@ -22,12 +22,12 @@ class Player:
             print(card.name)
 
     def display_draw_pile(self):
-        '''Print out the name of each card in the hand, in order.'''
+        '''Print out the name of each card in the draw pile, in order.'''
         for card in self.deck.draw_pile:
             print(card.name)
 
     def display_discard_pile(self):
-        '''Print out the name of each card in the hand, in order.'''
+        '''Print out the name of each card in the discard pile, in order.'''
         for card in self.deck.discard_pile:
             print(card.name)
 

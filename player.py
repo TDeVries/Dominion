@@ -66,11 +66,16 @@ class Hand:
         self.deck = deck
 
     def draw_card(self):
-        '''Move a single card from the draw pile to the player's hand'''
-        assert len(self.deck.draw_pile) > 0, 'The draw pile is empty'
+        '''Move a single card from the draw pile to the player's hand. 
+        Reshuffle the deck if the draw pile has run out. If no more cards 
+        available, do nothing.'''
 
-        next_card = self.deck.draw_pile.pop(0)
-        self.hand.append(next_card)
+        if len(self.deck.draw_pile) == 0:
+            self.deck._shuffle_deck()
+
+        if len(self.deck.draw_pile) > 0:
+            next_card = self.deck.draw_pile.pop(0)
+            self.hand.append(next_card)
 
     def draw_hand(self):
         '''Move 5 cards from the draw pile to the player's hand'''

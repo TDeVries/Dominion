@@ -50,12 +50,18 @@ class SupplyPiles:
             use. Options are 'random' and 'base'. Default: 'random'.
         '''
         self.card_set = card_set
+
+        if n_players == 2:
+            n_victory_cards = 8
+        else:
+            n_victory_cards = 12
+
         self.supply_piles = {'Copper': [Copper()] * (60 - 7 * n_players),
                              'Silver': [Silver()] * 40,
                              'Gold': [Gold()] * 30,
-                             'Estate': [Estate()] * 12,
-                             'Duchy': [Duchy()] * 12,
-                             'Province': [Province()] * 12,
+                             'Estate': [Estate()] * n_victory_cards,
+                             'Duchy': [Duchy()] * n_victory_cards,
+                             'Province': [Province()] * n_victory_cards,
                              'Curse': [Curse()] * (10 + 10 * (n_players - 2))}
 
         if self.card_set == 'random':
@@ -75,7 +81,7 @@ class SupplyPiles:
 
         for card in card_options:
             if card.card_type == 'Victory':
-                self.supply_piles[card.name] = [card] * 12
+                self.supply_piles[card.name] = [card] * n_victory_cards
             else:
                 self.supply_piles[card.name] = [card] * 10
 

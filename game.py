@@ -60,16 +60,12 @@ class Game:
             return False
 
     def take_turn(self, player):
-        '''
-        sort hand so that only playable options appear
-        user selects from valid options (end action phase is always an option)
-        repeat action card selection until no more actions, or user selects to end action phase
-        as cards are played, update number of actions, coins, buys, and cards
-        when action phase is complete, add value of all remaining treasure cards to coin pile
+        '''Player begins with one action and one buy. During the action
+        phase they can play actions cards, and during the buy phase they
+        can buy additional cards for their deck.
 
-        in buy phase, present user with a list of the potential cards that they can buy 
-           (based on the amount of coins they have)
-        not buying anything else is always an option
+        Args:
+            player (instance): The player whose turn it is
         '''
         turn_state = {'actions': 1, 'buys': 1, 'coins': 0}
         turn_state = self._action_phase(player, turn_state)

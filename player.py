@@ -1,5 +1,5 @@
 from cards import *
-from random import shuffle
+import random
 
 
 class Player:
@@ -18,23 +18,31 @@ class Player:
     def display_deck(self):
         '''Print out the name of each card in the deck, in order.'''
         deck = self.deck.draw_pile + self.deck.discard_pile + self.hand.hand
+        cards = []
         for card in deck:
-            print(card.name)
+            cards.append(card.name)
+        print('Deck: ' + str(cards))
 
     def display_draw_pile(self):
         '''Print out the name of each card in the draw pile, in order.'''
+        cards = []
         for card in self.deck.draw_pile:
-            print(card.name)
+            cards.append(card.name)
+        print('Draw Pile: ' + str(cards))
 
     def display_discard_pile(self):
         '''Print out the name of each card in the discard pile, in order.'''
+        cards = []
         for card in self.deck.discard_pile:
-            print(card.name)
+            cards.append(card.name)
+        print('Discard Pile: ' + str(cards))
 
     def display_hand(self):
         '''Print out the name of each card in the hand, in order.'''
+        cards = []
         for card in self.hand.hand:
-            print(card.name)
+            cards.append(card.name)
+        print('Hand: ' + str(cards))
 
 
 class Deck:
@@ -50,7 +58,7 @@ class Deck:
         '''Transfer the discard pile into the draw pile, then shuffle'''
         self.draw_pile += self.discard_pile
         self.discard_pile = []
-        shuffle(self.draw_pile)
+        random.shuffle(self.draw_pile)
 
 
 class Hand:

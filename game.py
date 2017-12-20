@@ -2,26 +2,31 @@
 #https://boardgamegeek.com/wiki/page/Complete_and_All-Encompassing_Dominion_FAQ
 from player import Player
 from cards import *
-from random import shuffle
+import random
 
 
 class Game:
-    def __init__(self, n_players):
+    def __init__(self, n_players, card_set='random', verbose=False):
         '''Initialize a new game, with n players.
 
         Args:
             n_players (int): Number of players in this game. Must be
                 between 2 and 4.
+            card_set (str): Indicates which pre-specified card set to 
+            use. Options are 'random' and 'base'. Default: 'random'.
+            verbose (bool): Indicates whether to print game state as 
+            actions take place.
         '''
         assert n_players >= 2 and n_players <= 4, "n_players must be between 2 and 4"
         self.n_players = n_players
+        self.verbose = verbose
 
         players = []
         for n in range(self.n_players):
             players.append(Player(player_id=n))
         self.players = players
 
-        self.init_supply_piles(card_set='random')
+        self.init_supply_piles(card_set=card_set)
 
     def init_supply_piles(self, card_set='random'):
         '''Initialize the supply piles.
@@ -33,6 +38,157 @@ class Game:
         self.supply_piles = SupplyPiles(n_players=self.n_players,
                                         card_set=card_set)
         self.supply_piles.display_supply_pile_count()
+
+    def check_game_over(self):
+        '''Check to see if any of the game end conditions have been met.
+        The game ends whenever any three supply piles are empty, or when
+        there are no Province cards left.
+
+        Return (bool): Returns True if the game is over, False if the 
+            game is not over.
+        '''
+        n_empty_piles = 0
+
+        for key, value in self.supply_piles.supply_piles.iteritems():
+            if len(value) == 0:
+                n_empty_piles += 1
+                if key == 'Province':
+                    return True
+        if n_empty_piles >= 3:
+            return True
+        else:
+            return False
+
+    def take_turn(self, player):
+        '''
+        sort hand so that only playable options appear
+        user selects from valid options (end action phase is always an option)
+        repeat action card selection until no more actions, or user selects to end action phase
+        as cards are played, update number of actions, coins, buys, and cards
+        when action phase is complete, add value of all remaining treasure cards to coin pile
+
+        in buy phase, present user with a list of the potential cards that they can buy 
+           (based on the amount of coins they have)
+        not buying anything else is always an option
+        '''
+        turn_state = {'actions': 1, 'buys': 1, 'coins': 0}
+        turn_state = self._action_phase(player, turn_state)
+
+        # _buy_phase(player)
+
+        player.hand.discard_hand()
+        player.hand.draw_hand()
+
+    def _buy_phase(self, player):
+        pass
+
+    def _action_phase(self, player, turn_state):
+        '''Plays actions cards from the player's hand until they run out,
+        or until they decide to stop playing them. Counts the number of 
+        coins in the player's hand at the end.
+
+        Args:
+            player (instance): The player who is playing the cards
+            turn_state (dict): Current phase state
+
+        Return:
+            turn_state (dict): Updated pahse state
+        '''
+
+        end_action_phase = False
+
+        while (turn_state['actions'] > 0) and not end_action_phase:
+            if self.verbose:
+                print('Turn state: ' + str(turn_state))
+                player.display_hand()
+
+            valid_actions = self._get_valid_actions(player.hand.hand)
+            if self.verbose:
+                print('Options: ' + str(valid_actions))
+
+            '''
+            Need to be able to input a selection here somehow!
+            For now it will just be a random selection.
+            '''
+            selected_action = random.choice(valid_actions)
+
+            if self.verbose:
+                print('Selection: ' + str(selected_action))
+
+            if selected_action == 'end_action_phase':
+                end_action_phase = True
+            else:
+                for card in player.hand.hand:
+                    if card.name == selected_action:
+                        turn_state = self._play_card(player, card, turn_state)
+
+        turn_state['coins'] += self._count_coins(player.hand.hand)
+        return turn_state
+
+    def _count_coins(self, hand):
+        '''Count value of Treasure cards in the player's hand
+
+        Args:
+            hand (instance): The player's hand
+
+        Return:
+            coin_count (int): The number of coins the player's 
+            Treasure cards are worth
+        '''
+        coin_count = 0
+        for card in hand:
+            if (card.card_type == 'Treasure'):
+                coin_count += card.coins
+        return coin_count
+
+    def _play_card(self, player, card, turn_state):
+        '''Play a card by triggering it's effects (draw cards, add 
+        actions, add buys, and add coins). Card is moved from the 
+        player's hand to the discard pile. Playing a card costs one 
+        action.
+
+        Args:
+            player (instance): The player who is playing the card
+            card (instance): The card that is being played
+            turn_state (dict): Current phase state
+
+        Return:
+            turn_state (dict): Updated phase state
+        '''
+        if hasattr(card, 'plus_cards'):
+            for i in range(card.plus_cards):
+                player.hand.draw_card()
+        if hasattr(card, 'plus_actions'):
+            turn_state['actions'] += card.plus_actions
+        if hasattr(card, 'plus_buys'):
+            turn_state['buys'] += card.plus_buys
+        if hasattr(card, 'coins'):
+            turn_state['coins'] += card.coins
+
+        player.hand.hand.remove(card)
+        player.deck.discard_pile.append(card)
+
+        turn_state['actions'] -= 1
+        return turn_state
+
+    def _get_valid_actions(self, hand):
+        '''Find all action cards in a player's hand. If duplicates of
+        a card exist, only one is shown. Ending the action phase is also
+        an option, which is always available.
+
+        Args:
+            hand (instance): A hand object, which contains the cards to 
+            be played
+
+        Return:
+            valid_action (list): Returns a list of action cards that the
+            player can play this action phase.
+        '''
+        valid_actions = ['end_action_phase']
+        for card in hand:
+            if (card.card_type == 'Action') and (card.name not in valid_actions):
+                valid_actions.append(card.name)
+        return valid_actions
 
 
 class SupplyPiles:
@@ -71,7 +227,7 @@ class SupplyPiles:
                             Smithy(), Spy(), Thief(), ThroneRoom(), CouncilRoom(),
                             Festival(), Laboratory(), Library(), Market(), Mine(),
                             Witch(), Adventurer()]
-            shuffle(card_options)
+            random.shuffle(card_options)
             card_options = card_options[:10]
 
         elif self.card_set == 'base':

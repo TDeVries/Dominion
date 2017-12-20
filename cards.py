@@ -67,6 +67,7 @@ class Cellar:
         self.cost = 2
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_action = 1
 
 
 class Chapel:
@@ -83,6 +84,7 @@ class Moat:
         self.cost = 2
         self.card_type = 'Action'
         self.card_subtype = 'Reaction'
+        self.plus_cards = 2
 
 
 class Chancellor:
@@ -91,6 +93,7 @@ class Chancellor:
         self.cost = 3
         self.card_type = 'Action'
         self.card_subtype = None
+        self.coins = 2
 
 
 class Village:
@@ -99,6 +102,8 @@ class Village:
         self.cost = 3
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_cards = 1
+        self.plus_actions = 2
 
 
 class Woodcutter:
@@ -147,6 +152,7 @@ class Militia:
         self.cost = 4
         self.card_type = 'Action'
         self.card_subtype = 'Attack'
+        self.coins = 2
 
 
 class Moneylender:
@@ -171,6 +177,7 @@ class Smithy:
         self.cost = 4
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_cards = 3
 
 
 class Spy:
@@ -179,6 +186,8 @@ class Spy:
         self.cost = 4
         self.card_type = 'Action'
         self.card_subtype = 'Attack'
+        self.plus_cards = 1
+        self.plus_actions = 1
 
 
 class Thief:
@@ -203,6 +212,8 @@ class CouncilRoom:
         self.cost = 5
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_cards = 4
+        self.plus_buys = 1
 
 
 class Festival:
@@ -211,6 +222,9 @@ class Festival:
         self.cost = 5
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_actions = 2
+        self.plus_buys = 1
+        self.coins = 2
 
 
 class Laboratory:
@@ -219,6 +233,8 @@ class Laboratory:
         self.cost = 5
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_cards = 2
+        self.plus_actions = 1
 
 
 class Library:
@@ -235,6 +251,10 @@ class Market:
         self.cost = 5
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_cards = 1
+        self.plus_actions = 1
+        self.plus_buys = 1
+        self.coins = 1
 
 
 class Mine:
@@ -251,6 +271,7 @@ class Witch:
         self.cost = 5
         self.card_type = 'Action'
         self.card_subtype = 'Attack'
+        self.plus_cards = 2
 
 
 class Adventurer:

@@ -12,13 +12,14 @@ class Game:
         Args:
             n_players (int): Number of players in this game. Must be
                 between 2 and 4.
-            card_set (str): Indicates which pre-specified card set to 
+            card_set (str): Indicates which pre-specified card set to
             use. Options are 'random' and 'base'. Default: 'random'.
-            verbose (bool): Indicates whether to print game state as 
+            verbose (bool): Indicates whether to print game state as
             actions take place.
         '''
         assert n_players >= 2 and n_players <= 4, "n_players must be between 2 and 4"
         self.n_players = n_players
+        self.card_set = card_set
         self.verbose = verbose
 
         players = []
@@ -26,25 +27,64 @@ class Game:
             players.append(Player(player_id=n))
         self.players = players
 
-        self.init_supply_piles(card_set=card_set)
+        self.supply_piles = SupplyPiles(n_players=self.n_players,
+                                        card_set=self.card_set)
+        if self.verbose:
+            self.supply_piles.display_supply_pile_count()
 
-    def init_supply_piles(self, card_set='random'):
-        '''Initialize the supply piles.
+    def play_game(self):
+        '''Loop through players' turns until the game has finished.
+        Count victory points to determine a winner.
+
+        Return:
+            victory_point_count (dict): Contains score for each player
+        '''
+        while not self.check_game_over():
+            for player in self.players:
+                if self.verbose:
+                    print('Player ' + str(player.player_id) + 's Turn')
+                self.take_turn(player)
+                print("")
+                if self.check_game_over():
+                    break
+
+        victory_point_count = {}
+        for player in self.players:
+            victory_points = self.count_victory_points(player)
+            victory_point_count['Player ' + str(player.player_id)] = victory_points
+        if self.verbose:
+            print(victory_point_count)
+        return victory_point_count
+
+    def reset_game(self):
+        '''Begin a new game using the current settings.'''
+        self.__init__(n_players=self.n_players, card_set=self.card_set,
+                      verbose=self.verbose)
+
+    def count_victory_points(self, player):
+        '''Count the number of victory points in the given player's deck
 
         Args:
-            card_set (str): Indicates which pre-specified card set to 
-            use. Options are 'random' and 'base'. Default: 'random'.
+            player (instance): The player whose deck to count
+
+        Return:
+            victory_points (int): Number of victory points in the 
+            player's deck
         '''
-        self.supply_piles = SupplyPiles(n_players=self.n_players,
-                                        card_set=card_set)
-        self.supply_piles.display_supply_pile_count()
+
+        victory_points = 0
+        deck = player.deck.draw_pile + player.deck.discard_pile + player.hand.hand
+        for card in deck:
+            if hasattr(card, 'victory_points'):
+                victory_points += card.victory_points
+        return victory_points
 
     def check_game_over(self):
         '''Check to see if any of the game end conditions have been met.
         The game ends whenever any three supply piles are empty, or when
         there are no Province cards left.
 
-        Return (bool): Returns True if the game is over, False if the 
+        Return (bool): Returns True if the game is over, False if the
             game is not over.
         '''
         n_empty_piles = 0
@@ -69,18 +109,96 @@ class Game:
         '''
         turn_state = {'actions': 1, 'buys': 1, 'coins': 0}
         turn_state = self._action_phase(player, turn_state)
-
-        # _buy_phase(player)
+        turn_state = self._buy_phase(player, turn_state)
 
         player.hand.discard_hand()
         player.hand.draw_hand()
 
-    def _buy_phase(self, player):
-        pass
+    def _buy_phase(self, player, turn_state):
+        '''Buy cards from the supply piles until out of money, or the
+        player decides to stop buying cards.
+
+        Args:
+            player (instance): The player who is playing the cards
+            turn_state (dict): Current phase state
+
+        Return:
+            turn_state (dict): Updated phase state
+        '''
+        if self.verbose:
+            print('Buy Phase')
+
+        end_buy_phase = False
+
+        while (turn_state['buys'] > 0) and not end_buy_phase:
+            valid_buys = self._get_valid_buys(turn_state['coins'])
+
+            if self.verbose:
+                print('Turn state: ' + str(turn_state))
+                print('Options: ' + str(valid_buys))
+
+            '''
+            Need to be able to input a selection here somehow!
+            For now it will just be a random selection.
+            '''
+            selected_buy = random.choice(valid_buys)
+
+            if self.verbose:
+                print('Selection: ' + str(selected_buy))
+
+            if selected_buy == 'end_buy_phase':
+                end_buy_phase = True
+            else:
+                turn_state = self._buy_card(player, selected_buy, turn_state)
+        return turn_state
+
+    def _buy_card(self, player, selected_buy, turn_state):
+        '''Buy a card by moving it from the supply piles to the player's
+        discard pile. The cost of the card is removed from the player's
+        coin count.
+
+        Args:
+            player (instance): The player who is playing the card
+            selected_buy (str): The card that is being purchased
+            turn_state (dict): Current phase state
+
+        Return:
+            turn_state (dict): Updated phase state
+        '''
+        for key, value in self.supply_piles.supply_piles.iteritems():
+            if len(value) > 0:
+                card = value[0]
+                if card.name == selected_buy:
+                    turn_state['coins'] -= card.cost
+                    turn_state['buys'] -= 1
+                    self.supply_piles.supply_piles[key].remove(card)
+                    player.deck.discard_pile.append(card)
+        return turn_state
+
+    def _get_valid_buys(self, coins):
+        '''Find all supply piles which still have cards left, and which
+        the player has enough coins to buy from. Not buying anything is
+        also always an option.
+
+        Args:
+            coins (int): How much money the player has to spend.
+
+        Return:
+            valid_buys (list): Returns a list of cards which the player
+            has enough money to buy.
+        '''
+        valid_buys = ['end_buy_phase']
+
+        for key, value in self.supply_piles.supply_piles.iteritems():
+            if len(value) > 0:
+                card = value[0]
+                if card.cost <= coins:
+                    valid_buys.append(card.name)
+        return valid_buys
 
     def _action_phase(self, player, turn_state):
         '''Plays actions cards from the player's hand until they run out,
-        or until they decide to stop playing them. Counts the number of 
+        or until they decide to stop playing them. Counts the number of
         coins in the player's hand at the end.
 
         Args:
@@ -88,8 +206,11 @@ class Game:
             turn_state (dict): Current phase state
 
         Return:
-            turn_state (dict): Updated pahse state
+            turn_state (dict): Updated phase state
         '''
+
+        if self.verbose:
+            print('Action Phase')
 
         end_action_phase = False
 
@@ -99,6 +220,7 @@ class Game:
                 player.display_hand()
 
             valid_actions = self._get_valid_actions(player.hand.hand)
+
             if self.verbose:
                 print('Options: ' + str(valid_actions))
 
@@ -128,7 +250,7 @@ class Game:
             hand (instance): The player's hand
 
         Return:
-            coin_count (int): The number of coins the player's 
+            coin_count (int): The number of coins the player's
             Treasure cards are worth
         '''
         coin_count = 0
@@ -138,9 +260,9 @@ class Game:
         return coin_count
 
     def _play_card(self, player, card, turn_state):
-        '''Play a card by triggering it's effects (draw cards, add 
-        actions, add buys, and add coins). Card is moved from the 
-        player's hand to the discard pile. Playing a card costs one 
+        '''Play a card by triggering it's effects (draw cards, add
+        actions, add buys, and add coins). Card is moved from the
+        player's hand to the discard pile. Playing a card costs one
         action.
 
         Args:
@@ -173,7 +295,7 @@ class Game:
         an option, which is always available.
 
         Args:
-            hand (instance): A hand object, which contains the cards to 
+            hand (instance): A hand object, which contains the cards to
             be played
 
         Return:
@@ -198,7 +320,7 @@ class SupplyPiles:
 
         Args:
             n_players (int): Number of players in the game.
-            card_set (str): Indicates which pre-specified card set to 
+            card_set (str): Indicates which pre-specified card set to
             use. Options are 'random' and 'base'. Default: 'random'.
         '''
         self.card_set = card_set
@@ -240,7 +362,7 @@ class SupplyPiles:
     def display_supply_pile_count(self):
         '''Print out the number of cards remaining in each supply pile.'''
         base_cards = ['Copper', 'Silver', 'Gold', 'Estate', 'Duchy',
-                       'Province', 'Curse']
+                      'Province', 'Curse']
 
         for key in base_cards:
             print(key + ': ' + str(len(self.supply_piles[key])))

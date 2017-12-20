@@ -52,9 +52,9 @@ class Deck:
         self.draw_pile = [Copper()] * 7 + [Estate()] * 3
         self.discard_pile = []
 
-        self._shuffle_deck()
+        self.shuffle_deck()
 
-    def _shuffle_deck(self):
+    def shuffle_deck(self):
         '''Transfer the discard pile into the draw pile, then shuffle'''
         self.draw_pile += self.discard_pile
         self.discard_pile = []
@@ -74,12 +74,12 @@ class Hand:
         self.deck = deck
 
     def draw_card(self):
-        '''Move a single card from the draw pile to the player's hand. 
-        Reshuffle the deck if the draw pile has run out. If no more cards 
+        '''Move a single card from the draw pile to the player's hand.
+        Reshuffle the deck if the draw pile has run out. If no more cards
         available, do nothing.'''
 
         if len(self.deck.draw_pile) == 0:
-            self.deck._shuffle_deck()
+            self.deck.shuffle_deck()
 
         if len(self.deck.draw_pile) > 0:
             next_card = self.deck.draw_pile.pop(0)

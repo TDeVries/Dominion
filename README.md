@@ -14,8 +14,9 @@ Class Descriptions:
 Features to add:
 
 - [ ] Special abilities for cards
-- [ ] Main game loop
-
+- [x] Main game loop
+- [ ] Implement basic AI
+- [ ] Implement more advanced AI
 
 Decisions to make:
 - Interface type (GUI, website, cmd, slack, etc.)

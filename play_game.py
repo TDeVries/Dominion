@@ -1,5 +1,5 @@
 from game import Game
-from agent import RandomAgent, HMIAgent
+from agent import RandomAgent
 from cards import *
 
 agent_dict = {'DemoBot 1': RandomAgent()}

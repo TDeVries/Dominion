@@ -9,7 +9,7 @@ from agent import RandomAgent
 
 
 class Game(object):
-    def __init__(self, n_players, agents={}, card_set='random', verbose=False):
+    def __init__(self, n_players, agents=None, card_set='random', verbose=False):
         '''Initialize a new game, with n players.
 
         Args:
@@ -24,6 +24,9 @@ class Game(object):
             verbose (bool): Indicates whether to print game state as
             actions take place. Default: 'False'.
         '''
+        if agents is None:
+            agents = {}
+
         assert n_players >= 2 and n_players <= 4, "n_players must be between 2 and 4"
         assert len(agents) <= n_players, "must not have more agents than n_players"
         self.n_players = n_players

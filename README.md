@@ -21,3 +21,14 @@ Features to add:
 Decisions to make:
 - Interface type (GUI, website, cmd, slack, etc.)
 - Interaction type (application client/server, web client/server, etc)
+
+
+## Installation
+
+For a developer installation, use: `pip install --editable .`.
+
+This installs Dominion to your system as a developer installation, such that
+editing the source files in the repository will be immediately reflected in the
+system install, without re-installing.
+
+To run Dominion after installation, type `dominion` at the command line.

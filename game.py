@@ -1,12 +1,14 @@
 # useful guide for the rules
 #https://boardgamegeek.com/wiki/page/Complete_and_All-Encompassing_Dominion_FAQ
+import random
+import six
+
 from player import Player
 from cards import *
 from agent import RandomAgent
-import random
 
 
-class Game:
+class Game(object):
     def __init__(self, n_players, agents={}, card_set='random', verbose=False):
         '''Initialize a new game, with n players.
 
@@ -29,7 +31,7 @@ class Game:
         self.verbose = verbose
 
         players = []
-        for player_id, agent in agents.iteritems():
+        for player_id, agent in six.iteritems(agents):
             players.append(Player(player_id=player_id, agent=agent))
 
         for n in range(len(agents), self.n_players):
@@ -98,7 +100,7 @@ class Game:
         '''
         n_empty_piles = 0
 
-        for key, value in self.supply_piles.supply_piles.iteritems():
+        for key, value in six.iteritems(self.supply_piles.supply_piles):
             if len(value) == 0:
                 n_empty_piles += 1
                 if key == 'Province':
@@ -170,7 +172,7 @@ class Game:
         Return:
             turn_state (dict): Updated phase state
         '''
-        for key, value in self.supply_piles.supply_piles.iteritems():
+        for key, value in six.iteritems(self.supply_piles.supply_piles):
             if len(value) > 0:
                 card = value[0]
                 if card.name == selected_buy:
@@ -194,7 +196,7 @@ class Game:
         '''
         valid_buys = ['end_buy_phase']
 
-        for key, value in self.supply_piles.supply_piles.iteritems():
+        for key, value in six.iteritems(self.supply_piles.supply_piles):
             if len(value) > 0:
                 card = value[0]
                 if card.cost <= coins:
@@ -310,7 +312,7 @@ class Game:
         return valid_actions
 
 
-class SupplyPiles:
+class SupplyPiles(object):
     def __init__(self, n_players, card_set='random'):
         '''Initialize the supply piles.
 
@@ -368,7 +370,7 @@ class SupplyPiles:
         for key in base_cards:
             print(key + ': ' + str(len(self.supply_piles[key])))
 
-        for key, value in self.supply_piles.iteritems():
+        for key, value in six.iteritems(self.supply_piles):
             if key not in base_cards:
                 print(key + ': ' + str(len(value)))
         print('')

@@ -358,6 +358,8 @@ class SupplyPiles(object):
             card_options = [Cellar(), Moat(), Village(), Woodcutter(),
                             Workshop(), Militia(), Remodel(), Smithy(),
                             Market(), Mine()]
+        else:
+            raise ValueError('Unsupported card set: {}.'.format(self.card_set))
 
         for card in card_options:
             if card.card_type == 'Victory':

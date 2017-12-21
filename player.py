@@ -2,7 +2,7 @@ from cards import *
 import random
 
 
-class Player:
+class Player(object):
     def __init__(self, player_id, agent):
         '''Initialize a new player, with identifier and starting deck
 
@@ -48,7 +48,7 @@ class Player:
         print('Hand: ' + str(cards))
 
 
-class Deck:
+class Deck(object):
     def __init__(self):
         '''Initialize deck with 7 Coppers and 3 Estates, then shuffle.
         Cards start in the draw pile.'''
@@ -64,7 +64,7 @@ class Deck:
         random.shuffle(self.draw_pile)
 
 
-class Hand:
+class Hand(object):
     def __init__(self, deck):
         '''Initializes a new hand, which contains the cards that
          the player can play each turn.

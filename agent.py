@@ -1,7 +1,7 @@
 import random
 
 
-class Agent:
+class Agent(object):
     def __init__(self):
         '''Base agent class. Agents are used to make decisions for each
         player in the game. Custom agents can be created by inheriting

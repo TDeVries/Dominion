@@ -1,4 +1,4 @@
-class Copper:
+class Copper(object):
     def __init__(self):
         self.name = 'Copper'
         self.cost = 0
@@ -7,7 +7,7 @@ class Copper:
         self.coins = 1
 
 
-class Silver:
+class Silver(object):
     def __init__(self):
         self.name = 'Silver'
         self.cost = 3
@@ -16,7 +16,7 @@ class Silver:
         self.coins = 2
 
 
-class Gold:
+class Gold(object):
     def __init__(self):
         self.name = 'Gold'
         self.cost = 6
@@ -25,7 +25,7 @@ class Gold:
         self.coins = 3
 
 
-class Estate:
+class Estate(object):
     def __init__(self):
         self.name = 'Estate'
         self.cost = 2
@@ -34,7 +34,7 @@ class Estate:
         self.victory_points = 1
 
 
-class Duchy:
+class Duchy(object):
     def __init__(self):
         self.name = 'Duchy'
         self.cost = 5
@@ -43,7 +43,7 @@ class Duchy:
         self.victory_points = 3
 
 
-class Province:
+class Province(object):
     def __init__(self):
         self.name = 'Province'
         self.cost = 8
@@ -52,7 +52,7 @@ class Province:
         self.victory_points = 6
 
 
-class Curse:
+class Curse(object):
     def __init__(self):
         self.name = 'Curse'
         self.cost = 0
@@ -61,7 +61,7 @@ class Curse:
         self.victory_points = -1
 
 
-class Cellar:
+class Cellar(object):
     def __init__(self):
         self.name = 'Cellar'
         self.cost = 2
@@ -70,7 +70,7 @@ class Cellar:
         self.plus_action = 1
 
 
-class Chapel:
+class Chapel(object):
     def __init__(self):
         self.name = 'Chapel'
         self.cost = 2
@@ -78,7 +78,7 @@ class Chapel:
         self.card_subtype = None
 
 
-class Moat:
+class Moat(object):
     def __init__(self):
         self.name = 'Moat'
         self.cost = 2
@@ -87,7 +87,7 @@ class Moat:
         self.plus_cards = 2
 
 
-class Chancellor:
+class Chancellor(object):
     def __init__(self):
         self.name = 'Chancellor'
         self.cost = 3
@@ -96,7 +96,7 @@ class Chancellor:
         self.coins = 2
 
 
-class Village:
+class Village(object):
     def __init__(self):
         self.name = 'Village'
         self.cost = 3
@@ -106,7 +106,7 @@ class Village:
         self.plus_actions = 2
 
 
-class Woodcutter:
+class Woodcutter(object):
     def __init__(self):
         self.name = 'Woodcutter'
         self.cost = 3
@@ -114,7 +114,7 @@ class Woodcutter:
         self.card_subtype = None
 
 
-class Workshop:
+class Workshop(object):
     def __init__(self):
         self.name = 'Workshop'
         self.cost = 3
@@ -122,7 +122,7 @@ class Workshop:
         self.card_subtype = None
 
 
-class Bureaucrat:
+class Bureaucrat(object):
     def __init__(self):
         self.name = 'Bureaucrat'
         self.cost = 4
@@ -130,7 +130,7 @@ class Bureaucrat:
         self.card_subtype = 'Attack'
 
 
-class Feast:
+class Feast(object):
     def __init__(self):
         self.name = 'Feast'
         self.cost = 4
@@ -138,7 +138,7 @@ class Feast:
         self.card_subtype = None
 
 
-class Gardens:
+class Gardens(object):
     def __init__(self):
         self.name = 'Gardens'
         self.cost = 4
@@ -146,7 +146,7 @@ class Gardens:
         self.card_subtype = None
 
 
-class Militia:
+class Militia(object):
     def __init__(self):
         self.name = 'Militia'
         self.cost = 4
@@ -155,7 +155,7 @@ class Militia:
         self.coins = 2
 
 
-class Moneylender:
+class Moneylender(object):
     def __init__(self):
         self.name = 'Moneylender'
         self.cost = 4
@@ -163,7 +163,7 @@ class Moneylender:
         self.card_subtype = None
 
 
-class Remodel:
+class Remodel(object):
     def __init__(self):
         self.name = 'Remodel'
         self.cost = 4
@@ -171,7 +171,7 @@ class Remodel:
         self.card_subtype = None
 
 
-class Smithy:
+class Smithy(object):
     def __init__(self):
         self.name = 'Smithy'
         self.cost = 4
@@ -180,7 +180,7 @@ class Smithy:
         self.plus_cards = 3
 
 
-class Spy:
+class Spy(object):
     def __init__(self):
         self.name = 'Spy'
         self.cost = 4
@@ -190,7 +190,7 @@ class Spy:
         self.plus_actions = 1
 
 
-class Thief:
+class Thief(object):
     def __init__(self):
         self.name = 'Thief'
         self.cost = 4
@@ -198,7 +198,7 @@ class Thief:
         self.card_subtype = 'Attack'
 
 
-class ThroneRoom:
+class ThroneRoom(object):
     def __init__(self):
         self.name = 'Throne Room'
         self.cost = 4
@@ -206,7 +206,7 @@ class ThroneRoom:
         self.card_subtype = None
 
 
-class CouncilRoom:
+class CouncilRoom(object):
     def __init__(self):
         self.name = 'Council Room'
         self.cost = 5
@@ -216,7 +216,7 @@ class CouncilRoom:
         self.plus_buys = 1
 
 
-class Festival:
+class Festival(object):
     def __init__(self):
         self.name = 'Festival'
         self.cost = 5
@@ -227,7 +227,7 @@ class Festival:
         self.coins = 2
 
 
-class Laboratory:
+class Laboratory(object):
     def __init__(self):
         self.name = 'Laboratory'
         self.cost = 5
@@ -237,7 +237,7 @@ class Laboratory:
         self.plus_actions = 1
 
 
-class Library:
+class Library(object):
     def __init__(self):
         self.name = 'Library'
         self.cost = 5
@@ -245,7 +245,7 @@ class Library:
         self.card_subtype = None
 
 
-class Market:
+class Market(object):
     def __init__(self):
         self.name = 'Market'
         self.cost = 5
@@ -257,7 +257,7 @@ class Market:
         self.coins = 1
 
 
-class Mine:
+class Mine(object):
     def __init__(self):
         self.name = 'Mine'
         self.cost = 5
@@ -265,7 +265,7 @@ class Mine:
         self.card_subtype = None
 
 
-class Witch:
+class Witch(object):
     def __init__(self):
         self.name = 'Witch'
         self.cost = 5
@@ -274,7 +274,7 @@ class Witch:
         self.plus_cards = 2
 
 
-class Adventurer:
+class Adventurer(object):
     def __init__(self):
         self.name = 'Adventurer'
         self.cost = 6

@@ -3,13 +3,16 @@ import random
 
 
 class Player:
-    def __init__(self, player_id):
+    def __init__(self, player_id, agent):
         '''Initialize a new player, with identifier and starting deck
 
         Args:
             player_id (int): A numerical identifier.
+            agent (instance): The agent that will be used to make
+            decisions for this player.
         '''
         self.player_id = player_id
+        self.agent = agent
         self.deck = Deck()
         self.hand = Hand(self.deck)
 

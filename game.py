@@ -2,29 +2,38 @@
 #https://boardgamegeek.com/wiki/page/Complete_and_All-Encompassing_Dominion_FAQ
 from player import Player
 from cards import *
+from agent import RandomAgent
 import random
 
 
 class Game:
-    def __init__(self, n_players, card_set='random', verbose=False):
+    def __init__(self, n_players, agents={}, card_set='random', verbose=False):
         '''Initialize a new game, with n players.
 
         Args:
             n_players (int): Number of players in this game. Must be
                 between 2 and 4.
+            agents (dict): Contains the agents who will play in this
+            game. The dict key is used as the player_id. If n_players is
+            greater than the number of agents provided, RandomAgents
+            will be used for the remaining players.
             card_set (str): Indicates which pre-specified card set to
             use. Options are 'random' and 'base'. Default: 'random'.
             verbose (bool): Indicates whether to print game state as
-            actions take place.
+            actions take place. Default: 'False'.
         '''
         assert n_players >= 2 and n_players <= 4, "n_players must be between 2 and 4"
+        assert len(agents) <= n_players, "must not have more agents than n_players"
         self.n_players = n_players
         self.card_set = card_set
         self.verbose = verbose
 
         players = []
-        for n in range(self.n_players):
-            players.append(Player(player_id=n))
+        for player_id, agent in agents.iteritems():
+            players.append(Player(player_id=player_id, agent=agent))
+
+        for n in range(len(agents), self.n_players):
+            players.append(Player(player_id='Player ' + str(n), agent=RandomAgent()))
         self.players = players
 
         self.supply_piles = SupplyPiles(n_players=self.n_players,
@@ -42,7 +51,7 @@ class Game:
         while not self.check_game_over():
             for player in self.players:
                 if self.verbose:
-                    print('Player ' + str(player.player_id) + 's Turn')
+                    print(str(player.player_id) + "'s Turn")
                 self.take_turn(player)
                 print("")
                 if self.check_game_over():
@@ -51,7 +60,7 @@ class Game:
         victory_point_count = {}
         for player in self.players:
             victory_points = self.count_victory_points(player)
-            victory_point_count['Player ' + str(player.player_id)] = victory_points
+            victory_point_count[str(player.player_id)] = victory_points
         if self.verbose:
             print(victory_point_count)
         return victory_point_count
@@ -68,7 +77,7 @@ class Game:
             player (instance): The player whose deck to count
 
         Return:
-            victory_points (int): Number of victory points in the 
+            victory_points (int): Number of victory points in the
             player's deck
         '''
 
@@ -137,11 +146,7 @@ class Game:
                 print('Turn state: ' + str(turn_state))
                 print('Options: ' + str(valid_buys))
 
-            '''
-            Need to be able to input a selection here somehow!
-            For now it will just be a random selection.
-            '''
-            selected_buy = random.choice(valid_buys)
+            selected_buy = player.agent.select_buy(valid_buys)
 
             if self.verbose:
                 print('Selection: ' + str(selected_buy))
@@ -224,11 +229,7 @@ class Game:
             if self.verbose:
                 print('Options: ' + str(valid_actions))
 
-            '''
-            Need to be able to input a selection here somehow!
-            For now it will just be a random selection.
-            '''
-            selected_action = random.choice(valid_actions)
+            selected_action = player.agent.select_action(valid_actions)
 
             if self.verbose:
                 print('Selection: ' + str(selected_action))

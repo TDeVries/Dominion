@@ -1,7 +1,9 @@
 from game import Game
+from agent import RandomAgent, HMIAgent
 from cards import *
 
-demo_game = Game(n_players=3, card_set='base', verbose=True)
+agent_dict = {'DemoBot 1': RandomAgent()}
+demo_game = Game(n_players=3, agents=agent_dict, card_set='base', verbose=True)
 
 demo_game.players[0].display_deck()
 print("")

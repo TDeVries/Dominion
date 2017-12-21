@@ -21,7 +21,7 @@ class Agent(object):
 class RandomAgent(Agent):
     def __init__(self):
         '''Agent that makes decisions randomly.'''
-        pass
+        super(RandomAgent, self).__init__()
 
     def select_action(self, valid_actions):
         '''Randomly select an action from the list of valid actions.

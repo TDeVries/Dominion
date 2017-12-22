@@ -1,3 +1,78 @@
+import six
+
+
+def gain_card(player, supply_piles, cost_limit=99):
+    '''The player gets to gain a card for free, as long as there are 
+    enough left, and it is below the cost limit.
+
+    Args:
+        player (instance): The player who gets the free card.
+        supply_piles (instance): The supply piles from which the card
+        will be taken.
+        cost_limit (int): The maximum allowed cost of the free card. If
+        not specified, then there is (effectively) no limit. Default: 99.
+    '''
+
+    valid_gains = []
+    for card_name, supply_pile in six.iteritems(supply_piles):
+        if len(supply_pile) > 0:
+            card = supply_pile[0]
+            if card.cost <= cost_limit:
+                valid_gains.append(card.name)
+
+    selected_gain = player.agent.select_gain(valid_gains)
+
+    for card_name, supply_pile in six.iteritems(supply_piles):
+        if len(supply_pile) > 0:
+            card = supply_pile[0]
+            if card.name == selected_gain:
+                supply_piles[card_name].remove(card)
+                player.deck.discard_pile.append(card)
+                break
+
+
+def discard_card(player):
+    '''The player selects a card to discard. It is moved from their hand
+    to the discard pile.
+
+    Args:
+        player (instance): The player who discards a card.
+    '''
+    valid_discard = []
+    for card in player.hand.hand:
+        if card.name not in valid_discard:
+            valid_discard.append(card.name)
+
+    selected_discard = player.agent.select_discard(valid_discard)
+
+    for card in player.hand.hand:
+        if card.name == selected_discard:
+            player.hand.hand.remove(card)
+            player.deck.discard_pile.append(card)
+            break
+
+
+def trash_card(player):
+    '''The player selects a card to trash. It is removed from the game.
+
+    Args:
+        player (instance): The player who trashes a card.
+    '''
+    valid_trash = []
+    for card in player.hand.hand:
+        if card.name not in valid_trash:
+            valid_trash.append(card.name)
+
+    selected_trash = player.agent.select_trash(valid_trash)
+
+    for card in player.hand.hand:
+        if card.name == selected_trash:
+            player.hand.hand.remove(card)
+            break
+
+    return card
+
+
 class Copper(object):
     def __init__(self):
         self.name = 'Copper'
@@ -121,6 +196,16 @@ class Workshop(object):
         self.card_type = 'Action'
         self.card_subtype = None
 
+    def special_ability(self, game, player):
+        '''Player gains a card worth up to 4 coins.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who gains the card
+        '''
+        gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
+                  cost_limit=4)
+
 
 class Bureaucrat(object):
     def __init__(self):
@@ -136,6 +221,18 @@ class Feast(object):
         self.cost = 4
         self.card_type = 'Action'
         self.card_subtype = None
+
+    def special_ability(self, game, player):
+        '''Player gains a card worth up to 5 coins, and the Feast card
+        is trashed.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who gains the card
+        '''
+        gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
+                  cost_limit=5)
+        player.deck.discard_pile.remove(self)
 
 
 class Gardens(object):

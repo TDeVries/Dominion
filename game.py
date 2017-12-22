@@ -245,6 +245,7 @@ class Game(object):
                 for card in player.hand.hand:
                     if card.name == selected_action:
                         turn_state = self._play_card(player, card, turn_state)
+                        break
 
         turn_state['coins'] += self._count_coins(player.hand.hand)
         return turn_state
@@ -279,6 +280,12 @@ class Game(object):
         Return:
             turn_state (dict): Updated phase state
         '''
+
+        # Remove the card from the hand first so that the player cannot
+        # choose to discard or trash it after they have already played it
+        player.hand.hand.remove(card)
+        player.deck.discard_pile.append(card)
+
         if hasattr(card, 'plus_cards'):
             for i in range(card.plus_cards):
                 player.hand.draw_card()
@@ -288,9 +295,8 @@ class Game(object):
             turn_state['buys'] += card.plus_buys
         if hasattr(card, 'coins'):
             turn_state['coins'] += card.coins
-
-        player.hand.hand.remove(card)
-        player.deck.discard_pile.append(card)
+        if hasattr(card, 'special_ability'):
+            card.special_ability(self, player)
 
         turn_state['actions'] -= 1
         return turn_state

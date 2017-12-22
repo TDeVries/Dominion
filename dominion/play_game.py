@@ -2,8 +2,8 @@
 """
 import click
 
-from game import Game
-from agent import HMIAgent
+from dominion.game import Game
+from dominion.agent import HMIAgent
 
 
 @click.command()

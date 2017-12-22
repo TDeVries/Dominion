@@ -3,9 +3,9 @@
 import random
 import six
 
-from player import Player
-from cards import *
-from agent import RandomAgent
+from dominion.player import Player
+from dominion.cards import *
+from dominion.agent import RandomAgent
 
 
 class Game(object):

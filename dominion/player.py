@@ -1,5 +1,6 @@
-from cards import *
 import random
+
+from dominion.cards import *
 
 
 class Player(object):

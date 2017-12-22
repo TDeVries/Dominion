@@ -11,6 +11,6 @@ setup(
     ],
     entry_points='''
         [console_scripts]
-        dominion=play_game:play_game
+        dominion=dominion.play_game:play_game
     ''',
 )

@@ -28,6 +28,12 @@ class Agent(object):
     def select_trash(self, valid_trash):
         raise NotImplementedError
 
+    def select_n_discard(self, valid_n):
+        raise NotImplementedError
+
+    def select_n_trash(self, valid_n):
+        raise NotImplementedError
+
 
 def _user_select_from_list(option_name, options):
     """Prompt the user to select options of type `option_name` (e.g. buys or
@@ -108,6 +114,12 @@ class HMIAgent(Agent):
     def select_trash(self, valid_trash):
         return _user_select_from_list('trash', valid_trash)
 
+    def select_n_discard(self, valid_n):
+        return _user_select_from_list('number of cards to discard', valid_n)
+
+    def select_n_trash(self, valid_n):
+        return _user_select_from_list('number of cards to trash', valid_n)
+
 
 class RandomAgent(Agent):
     def __init__(self):
@@ -160,3 +172,23 @@ class RandomAgent(Agent):
         '''
         selected_trash = random.choice(valid_trash)
         return selected_trash
+
+    def select_n_discard(self, valid_n):
+        '''Randomly select a number of cards to discard
+
+        Args:
+            valid_n (list): Contains the options for the number of cards
+            to discard.
+        '''
+        selected_n = random.choice(valid_n)
+        return selected_n
+
+    def select_n_trash(self, valid_n):
+        '''Randomly select a number of cards to trash
+
+        Args:
+            valid_n (list): Contains the options for the number of cards
+            to trash.
+        '''
+        selected_n = random.choice(valid_n)
+        return selected_n

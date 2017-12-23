@@ -38,3 +38,7 @@ def play_game(card_set, num_players, verbose):
     print("")
 
     demo_game.play_game()
+
+
+if __name__ == '__main__':
+    play_game()

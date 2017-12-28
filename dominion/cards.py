@@ -275,6 +275,8 @@ class Woodcutter(object):
         self.cost = 3
         self.card_type = 'Action'
         self.card_subtype = None
+        self.plus_buys = 1
+        self.coins = 2
 
 
 class Workshop(object):

@@ -247,6 +247,17 @@ class Chancellor(object):
         self.card_subtype = None
         self.coins = 2
 
+    def special_ability(self, game, player):
+        '''Player may immediately put their deck into their discard pile.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card.
+        '''
+        selected_shuffle = player.agent.select_shuffle()
+        if selected_shuffle == 'Yes':
+            player.deck.shuffle_deck()
+
 
 class Village(object):
     def __init__(self):
@@ -278,7 +289,7 @@ class Workshop(object):
 
         Args:
             game (instance): The current game.
-            player (instance): The player who gains the card
+            player (instance): The player who played the card.
         '''
         gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
                   cost_limit=4)
@@ -290,6 +301,29 @@ class Bureaucrat(object):
         self.cost = 4
         self.card_type = 'Action'
         self.card_subtype = 'Attack'
+
+    def special_ability(self, game, player_who_played_the_card):
+        '''Player gains a Silver on the top of their deck. Each other
+        player puts a Victory card from their hand to the top of their 
+        deck (if they have one).
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card.
+        '''
+        silver_pile = game.supply_piles.supply_piles['Silver']
+        if len(silver_pile) > 0:
+            silver_card = silver_pile.pop(0)
+            player_who_played_the_card.deck.draw_pile.insert(0, silver_card)
+
+        for player in game.players:
+            if player is not player_who_played_the_card:
+                if successful_attack(player=player):
+                    for card in player.hand.hand:
+                        if card.card_type == 'Victory':
+                            player.hand.hand.remove(card)
+                            player.deck.draw_pile.insert(0, card)
+                            break
 
 
 class Feast(object):
@@ -495,6 +529,22 @@ class Witch(object):
         self.card_type = 'Action'
         self.card_subtype = 'Attack'
         self.plus_cards = 2
+
+    def special_ability(self, game, player_who_played_the_card):
+        '''Each other player discards down to 3 cards, unless they have
+        a moat in their hand.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+        for player in game.players:
+            if player is not player_who_played_the_card:
+                if successful_attack(player=player):
+                    curse_pile = game.supply_piles.supply_piles['Curse']
+                    if len(curse_pile) > 0:
+                        curse_card = curse_pile.pop(0)
+                        player.deck.discard_pile.append(curse_card)
 
 
 class Adventurer(object):

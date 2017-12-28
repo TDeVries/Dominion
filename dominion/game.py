@@ -76,7 +76,9 @@ class Game(object):
                       verbose=self.verbose)
 
     def count_victory_points(self, player):
-        '''Count the number of victory points in the given player's deck
+        '''Count the number of victory points in the given player's deck.
+        Gardens count as 1 victory point for every 10 cards in the
+        player's deck.
 
         Args:
             player (instance): The player whose deck to count
@@ -88,12 +90,15 @@ class Game(object):
 
         victory_points = 0
         deck = player.deck.draw_pile + player.deck.discard_pile + player.hand.hand
+        num_cards = len(deck)
         for card in deck:
             if hasattr(card, 'victory_points'):
                 victory_points += card.victory_points
+            if card.name == 'Gardens':
+                victory_points += int(num_cards * 0.1)
         return victory_points
 
-    def check_game_over(self):
+    def check_game_over(self): 
         '''Check to see if any of the game end conditions have been met.
         The game ends whenever any three supply piles are empty, or when
         there are no Province cards left.

@@ -386,6 +386,21 @@ class Moneylender(object):
         self.card_type = 'Action'
         self.card_subtype = None
 
+    def special_ability(self, game, player):
+        '''Player may trash a copper to gain 3 coins. It is assumed that
+        if they play this card and have a copper in their hand, that
+        they would like to trash it.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+        for card in player.hand.hand:
+            if card.name == 'Copper':
+                player.hand.hand.remove(card)
+                player.turn_state['coins'] += 3
+                break
+
 
 class Remodel(object):
     def __init__(self):
@@ -442,6 +457,46 @@ class ThroneRoom(object):
         self.card_type = 'Action'
         self.card_subtype = None
 
+    def special_ability(self, game, player):
+        '''Player can play an action card from their hand twice.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+
+        # Change the text of the first valid action to distinguish
+        # between throne room and the actual action phase
+        valid_actions = game._get_valid_actions(player.hand.hand)
+        valid_actions[0] = 'no_action'
+
+        selected_action = player.agent.select_action(valid_actions)
+
+        if selected_action == 'no_action':
+            pass
+        else:
+            for card in player.hand.hand:
+                if card.name == selected_action:
+                    # Remove the card from the hand first so that the player cannot
+                    # choose to discard or trash it after they have already played it
+                    player.hand.hand.remove(card)
+                    player.deck.discard_pile.append(card)
+
+                    for repeats in range(2):
+                        if hasattr(card, 'plus_cards'):
+                            for i in range(card.plus_cards):
+                                player.hand.draw_card()
+                        if hasattr(card, 'plus_actions'):
+                            player.turn_state['actions'] += card.plus_actions
+                        if hasattr(card, 'plus_buys'):
+                            player.turn_state['buys'] += card.plus_buys
+                        if hasattr(card, 'coins'):
+                            player.turn_state['coins'] += card.coins
+                        if hasattr(card, 'special_ability'):
+                            card.special_ability(game, player)
+
+                    break
+
 
 class CouncilRoom(object):
     def __init__(self):
@@ -451,6 +506,18 @@ class CouncilRoom(object):
         self.card_subtype = None
         self.plus_cards = 4
         self.plus_buys = 1
+
+    def special_ability(self, game, player_who_played_the_card):
+        '''Each other player draws a card.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+
+        for player in game.players:
+            if player is not player_who_played_the_card:
+                player.hand.draw_card()
 
 
 class Festival(object):
@@ -480,6 +547,41 @@ class Library(object):
         self.cost = 5
         self.card_type = 'Action'
         self.card_subtype = None
+
+    def special_ability(self, game, player):
+        '''Player draws until they have 7 cards. They can immediately
+        discard any Action card they draw, and it will not count towards
+        the 7 card limit.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+
+        # Keep track of the deck size to make sure we don't get stuck in
+        #   a loop if there are not enough cards to draw 7.
+        deck_size = len(player.deck.discard_pile) + len(player.deck.draw_pile)
+        cards_drawn = 0
+
+        # Cards are not returned to the deck until the action has been 
+        #   fully completed
+        discarded_cards = []
+
+        while len(player.hand.hand) < 7 and cards_drawn < deck_size:
+            player.hand.draw_card()
+            cards_drawn += 1
+            card = player.hand.hand[-1]
+
+            if card.card_type == 'Action':
+                valid_discard = ['keep_card', card.name]
+                selected_discard = player.agent.select_discard(valid_discard=valid_discard)
+
+                if selected_discard != 'keep_card':
+                    player.hand.hand.remove(card)
+                    discarded_cards.append(card)
+
+        for card in discarded_cards:
+            player.deck.discard_pile.append(card)
 
 
 class Market(object):
@@ -555,3 +657,29 @@ class Adventurer(object):
         self.cost = 6
         self.card_type = 'Action'
         self.card_subtype = None
+
+    def special_ability(self, game, player):
+        '''Player draws cards until they gain two Treasure cards.
+        All other card types are discarded.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+
+        # Keep track of the deck size to make sure we don't get stuck in
+        #   a loop if there are not enough cards to draw 7.
+        deck_size = len(player.deck.discard_pile) + len(player.deck.draw_pile)
+        cards_drawn = 0
+        treasures_drawn = 0
+
+        while treasures_drawn < 2 and cards_drawn < deck_size:
+            player.hand.draw_card()
+            cards_drawn += 1
+            card = player.hand.hand[-1]
+
+            if card.card_type == 'Treasure':
+                treasures_drawn += 1
+            else:
+                player.hand.hand.remove(card)
+                player.deck.discard_pile.append(card)

@@ -98,7 +98,7 @@ class Game(object):
                 victory_points += int(num_cards * 0.1)
         return victory_points
 
-    def check_game_over(self): 
+    def check_game_over(self):
         '''Check to see if any of the game end conditions have been met.
         The game ends whenever any three supply piles are empty, or when
         there are no Province cards left.
@@ -126,34 +126,30 @@ class Game(object):
         Args:
             player (instance): The player whose turn it is
         '''
-        turn_state = {'actions': 1, 'buys': 1, 'coins': 0}
-        turn_state = self._action_phase(player, turn_state)
-        turn_state = self._buy_phase(player, turn_state)
+        player.turn_state = {'actions': 1, 'buys': 1, 'coins': 0}
+        self._action_phase(player)
+        self._buy_phase(player)
 
         player.hand.discard_hand()
         player.hand.draw_hand()
 
-    def _buy_phase(self, player, turn_state):
+    def _buy_phase(self, player):
         '''Buy cards from the supply piles until out of money, or the
         player decides to stop buying cards.
 
         Args:
             player (instance): The player who is playing the cards
-            turn_state (dict): Current phase state
-
-        Return:
-            turn_state (dict): Updated phase state
         '''
         if self.verbose:
             print('Buy Phase')
 
         end_buy_phase = False
 
-        while (turn_state['buys'] > 0) and not end_buy_phase:
-            valid_buys = self._get_valid_buys(turn_state['coins'])
+        while (player.turn_state['buys'] > 0) and not end_buy_phase:
+            valid_buys = self._get_valid_buys(player.turn_state['coins'])
 
             if self.verbose:
-                print('Turn state: ' + str(turn_state))
+                print('Turn state: ' + str(player.turn_state))
                 print('Options: ' + str(valid_buys))
 
             selected_buy = player.agent.select_buy(valid_buys)
@@ -164,10 +160,9 @@ class Game(object):
             if selected_buy == 'end_buy_phase':
                 end_buy_phase = True
             else:
-                turn_state = self._buy_card(player, selected_buy, turn_state)
-        return turn_state
+                self._buy_card(player, selected_buy)
 
-    def _buy_card(self, player, selected_buy, turn_state):
+    def _buy_card(self, player, selected_buy):
         '''Buy a card by moving it from the supply piles to the player's
         discard pile. The cost of the card is removed from the player's
         coin count.
@@ -175,20 +170,15 @@ class Game(object):
         Args:
             player (instance): The player who is playing the card
             selected_buy (str): The card that is being purchased
-            turn_state (dict): Current phase state
-
-        Return:
-            turn_state (dict): Updated phase state
         '''
         for key, value in six.iteritems(self.supply_piles.supply_piles):
             if len(value) > 0:
                 card = value[0]
                 if card.name == selected_buy:
-                    turn_state['coins'] -= card.cost
-                    turn_state['buys'] -= 1
+                    player.turn_state['coins'] -= card.cost
+                    player.turn_state['buys'] -= 1
                     self.supply_piles.supply_piles[key].remove(card)
                     player.deck.discard_pile.append(card)
-        return turn_state
 
     def _get_valid_buys(self, coins):
         '''Find all supply piles which still have cards left, and which
@@ -211,17 +201,13 @@ class Game(object):
                     valid_buys.append(card.name)
         return valid_buys
 
-    def _action_phase(self, player, turn_state):
+    def _action_phase(self, player):
         '''Plays actions cards from the player's hand until they run out,
         or until they decide to stop playing them. Counts the number of
         coins in the player's hand at the end.
 
         Args:
             player (instance): The player who is playing the cards
-            turn_state (dict): Current phase state
-
-        Return:
-            turn_state (dict): Updated phase state
         '''
 
         if self.verbose:
@@ -229,9 +215,9 @@ class Game(object):
 
         end_action_phase = False
 
-        while (turn_state['actions'] > 0) and not end_action_phase:
+        while (player.turn_state['actions'] > 0) and not end_action_phase:
             if self.verbose:
-                print('Turn state: ' + str(turn_state))
+                print('Turn state: ' + str(player.turn_state))
                 player.display_hand()
 
             valid_actions = self._get_valid_actions(player.hand.hand)
@@ -249,11 +235,10 @@ class Game(object):
             else:
                 for card in player.hand.hand:
                     if card.name == selected_action:
-                        turn_state = self._play_card(player, card, turn_state)
+                        self._play_card(player, card)
                         break
 
-        turn_state['coins'] += self._count_coins(player.hand.hand)
-        return turn_state
+        player.turn_state['coins'] += self._count_coins(player.hand.hand)
 
     def _count_coins(self, hand):
         '''Count value of Treasure cards in the player's hand
@@ -271,7 +256,7 @@ class Game(object):
                 coin_count += card.coins
         return coin_count
 
-    def _play_card(self, player, card, turn_state):
+    def _play_card(self, player, card):
         '''Play a card by triggering it's effects (draw cards, add
         actions, add buys, and add coins). Card is moved from the
         player's hand to the discard pile. Playing a card costs one
@@ -280,10 +265,6 @@ class Game(object):
         Args:
             player (instance): The player who is playing the card
             card (instance): The card that is being played
-            turn_state (dict): Current phase state
-
-        Return:
-            turn_state (dict): Updated phase state
         '''
 
         # Remove the card from the hand first so that the player cannot
@@ -295,16 +276,15 @@ class Game(object):
             for i in range(card.plus_cards):
                 player.hand.draw_card()
         if hasattr(card, 'plus_actions'):
-            turn_state['actions'] += card.plus_actions
+            player.turn_state['actions'] += card.plus_actions
         if hasattr(card, 'plus_buys'):
-            turn_state['buys'] += card.plus_buys
+            player.turn_state['buys'] += card.plus_buys
         if hasattr(card, 'coins'):
-            turn_state['coins'] += card.coins
+            player.turn_state['coins'] += card.coins
         if hasattr(card, 'special_ability'):
             card.special_ability(self, player)
 
-        turn_state['actions'] -= 1
-        return turn_state
+        player.turn_state['actions'] -= 1
 
     def _get_valid_actions(self, hand):
         '''Find all action cards in a player's hand. If duplicates of

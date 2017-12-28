@@ -14,6 +14,7 @@ class Player(object):
         '''
         self.player_id = player_id
         self.agent = agent
+        self.turn_state = {}
         self.deck = Deck()
         self.hand = Hand(self.deck)
 

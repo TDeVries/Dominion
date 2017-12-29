@@ -441,6 +441,42 @@ class Spy(object):
         self.plus_cards = 1
         self.plus_actions = 1
 
+    def special_ability(self, game, player_who_played_the_card):
+        '''Each player reveals the top card of their deck. The player
+        who played Spy chooses whether that card will be kept or
+        discarded.
+
+        For this implementation we will assume that for other players
+        the bot will make the opposite decision for whether or not to
+        discard a card that it would make for itself.
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+        for player in game.players:
+            if player is not player_who_played_the_card:
+                if successful_attack(player=player):
+                    card = player.deck.draw_pile[0]
+                    valid_discard = ['keep_card', card.name]
+                    selected_discard = player_who_played_the_card.agent.select_discard(valid_discard)
+
+                    if selected_discard == 'keep_card':
+                        # If we would want to keep the card if it was
+                        # ours, that probably means we would want to
+                        # discard it if it were our opponents
+                        player.deck.draw_pile.remove(card)
+                        player.deck.discard_pile.append(card)
+
+            else:
+                card = player_who_played_the_card.deck.draw_pile[0]
+                valid_discard = ['keep_card', card.name]
+                selected_discard = player_who_played_the_card.agent.select_discard(valid_discard)
+
+                if selected_discard != 'keep_card':
+                    player_who_played_the_card.deck.draw_pile.remove(card)
+                    player_who_played_the_card.deck.discard_pile.append(card)
+
 
 class Thief(object):
     def __init__(self):
@@ -448,6 +484,24 @@ class Thief(object):
         self.cost = 4
         self.card_type = 'Action'
         self.card_subtype = 'Attack'
+
+    def special_ability(self, game, player_who_played_the_card):
+        '''Each other player reveals the top 2 cards of their deck. If
+        they reveal any Treasure cards, the player who played this card
+        can trash one of them. The remaining card(s) are discarded. The
+        player who played this card can gain any or all of the trashed 
+        cards.
+
+        THIS CARD IS INCOMPLETE
+
+        Args:
+            game (instance): The current game.
+            player (instance): The player who played the card
+        '''
+        for player in game.players:
+            if player is not player_who_played_the_card:
+                if successful_attack(player=player):
+                    pass
 
 
 class ThroneRoom(object):

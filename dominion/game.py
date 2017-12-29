@@ -58,7 +58,8 @@ class Game(object):
                 if self.verbose:
                     print(str(player.player_id) + "'s Turn")
                 self.take_turn(player)
-                print("")
+                if self.verbose:
+                    print("")
                 if self.check_game_over():
                     break
 

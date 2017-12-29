@@ -345,7 +345,12 @@ class Feast(object):
         '''
         gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
                   cost_limit=5)
-        player.deck.discard_pile.remove(self)
+        try:
+            player.deck.discard_pile.remove(self)
+        except ValueError:
+            # Thrown if a Throne Room is used on the Feast, since it
+            # cannot be removed from the deck twice. Just do nothing.
+            pass
 
 
 class Gardens(object):
@@ -417,10 +422,11 @@ class Remodel(object):
             game (instance): The current game.
             player (instance): The player who played the card
         '''
-        trashed_card = trash_card(player=player)
-        cost_limit = trashed_card.cost + 2
-        gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
-                  cost_limit=cost_limit)
+        if len(player.hand.hand) > 0:
+            trashed_card = trash_card(player=player)
+            cost_limit = trashed_card.cost + 2
+            gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
+                      cost_limit=cost_limit)
 
 
 class Smithy(object):
@@ -457,25 +463,33 @@ class Spy(object):
         for player in game.players:
             if player is not player_who_played_the_card:
                 if successful_attack(player=player):
-                    card = player.deck.draw_pile[0]
+                    if len(player.deck.draw_pile) == 0:
+                        player.deck.shuffle_deck()
+
+                    if len(player.deck.draw_pile) > 0:
+                        card = player.deck.draw_pile[0]
+                        valid_discard = ['keep_card', card.name]
+                        selected_discard = player_who_played_the_card.agent.select_discard(valid_discard)
+
+                        if selected_discard == 'keep_card':
+                            # If we would want to keep the card if it was
+                            # ours, that probably means we would want to
+                            # discard it if it were our opponents
+                            player.deck.draw_pile.remove(card)
+                            player.deck.discard_pile.append(card)
+
+            else:
+                if len(player_who_played_the_card.deck.draw_pile) == 0:
+                    player_who_played_the_card.deck.shuffle_deck()
+
+                if len(player_who_played_the_card.deck.draw_pile) > 0:
+                    card = player_who_played_the_card.deck.draw_pile[0]
                     valid_discard = ['keep_card', card.name]
                     selected_discard = player_who_played_the_card.agent.select_discard(valid_discard)
 
-                    if selected_discard == 'keep_card':
-                        # If we would want to keep the card if it was
-                        # ours, that probably means we would want to
-                        # discard it if it were our opponents
-                        player.deck.draw_pile.remove(card)
-                        player.deck.discard_pile.append(card)
-
-            else:
-                card = player_who_played_the_card.deck.draw_pile[0]
-                valid_discard = ['keep_card', card.name]
-                selected_discard = player_who_played_the_card.agent.select_discard(valid_discard)
-
-                if selected_discard != 'keep_card':
-                    player_who_played_the_card.deck.draw_pile.remove(card)
-                    player_who_played_the_card.deck.discard_pile.append(card)
+                    if selected_discard != 'keep_card':
+                        player_who_played_the_card.deck.draw_pile.remove(card)
+                        player_who_played_the_card.deck.discard_pile.append(card)
 
 
 class Thief(object):
@@ -489,7 +503,7 @@ class Thief(object):
         '''Each other player reveals the top 2 cards of their deck. If
         they reveal any Treasure cards, the player who played this card
         can trash one of them. The remaining card(s) are discarded. The
-        player who played this card can gain any or all of the trashed 
+        player who played this card can gain any or all of the trashed
         cards.
 
         THIS CARD IS INCOMPLETE

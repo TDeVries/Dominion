@@ -1,4 +1,7 @@
 import random
+import inspect
+import six
+import cards
 
 import click
 
@@ -8,10 +11,108 @@ class Agent(object):
         '''Base agent class. Agents are used to make decisions for each
         player in the game. Custom agents can be created by inheriting
         this class and modifying the decision functions.'''
-        pass
+
+        self.player = None
+
+        # This function collects the names of all the classes from the
+        # cards module, i.e. all the card names.
+        card_names = [m[0] for m in inspect.getmembers(cards, inspect.isclass)
+                      if m[1].__module__ == 'dominion.cards']
+
+        cards_base_dict = {}
+        for card_name in card_names:
+            cards_base_dict[card_name] = 0
+
+        self.cards_base_dict = cards_base_dict
 
     def _get_game_state(self):
-        pass
+        '''Retrieve the game state and encode it. The game state consists
+        of three parts:
+
+        1) The number of each card in the player's deck
+        2) The number of cards in each of the supply piles
+        3) The player's current hand
+
+        Information is first encoded in dictionaries which count the
+        number of all cards for each part of the game state. The
+        dictionaries are then converted to lists and concatenated to get
+        a single list containing a bunch of numbers the represents the
+        current game state.
+
+        Return:
+            game_state (list): A list which contains the encoded game
+            state.
+        '''
+        assert self.player is not None, 'player object is not instantiated!'
+
+        deck = self.player.deck.draw_pile + self.player.deck.discard_pile + \
+            self.player.hand.hand
+        supply_piles = self.player.game.supply_piles.supply_piles
+        hand = self.player.hand.hand
+
+        deck_dict = self.cards_base_dict.copy()
+        supply_piles_dict = self.cards_base_dict.copy()
+        hand_dict = self.cards_base_dict.copy()
+
+        for card in deck:
+            deck_dict[card.name] += 1
+
+        for card_name, supply_pile in six.iteritems(supply_piles):
+            supply_piles_dict[card_name] = len(supply_pile)
+
+        for card in hand:
+            hand_dict[card.name] += 1
+
+        deck_list = self._dict_to_list(deck_dict)
+        supply_pile_list = self._dict_to_list(supply_piles_dict)
+        hand_list = self._dict_to_list(hand_dict)
+
+        game_state = deck_list + supply_pile_list + hand_list
+        return game_state
+
+    def _dict_to_list(self, card_dict):
+        '''Converts a dictionary of cards and their corresponding counts
+        to a list of the card counts. Cards are sorted in alphabetical
+        order so that each index always contains the count for the same
+        card.
+
+        Args:
+            card_dict (dict): A dictionary where the keys are card names
+            and the values are integers representing the number of that
+            card.
+
+        Return:
+            card_list (list): A list where each value represents the
+            count of the corresponding card.
+        '''
+        assert len(card_dict) == len(self.cards_base_dict), 'dict ' + \
+            'should have one index for each possible card (even ' + \
+            'those not included in this game)'
+
+        card_list = [value for (key, value) in sorted(card_dict.items())]
+        return card_list
+
+    def _list_to_dict(self, card_list):
+        '''Converts a list of cards to a dictionary. Counts are remapped
+        to the corresponding card.
+
+        Args:
+            card_list (list): A list where each value represents the
+            count of the corresponding card.
+
+        Return:
+            card_dict (dict): A dictionary where the keys are card names
+            and the values are integers representing the number of that
+            card.
+        '''
+        assert len(card_list) == len(self.cards_base_dict), 'list ' + \
+            'should have one index for each possible card (even ' + \
+            'those not included in this game)'
+
+        card_dict = {}
+        for key, value in zip(sorted(self.cards_base_dict.keys()), card_list):
+            card_dict[key] = value
+        return card_dict
 
     def select_action(self, valid_actions):
         raise NotImplementedError
@@ -202,6 +303,10 @@ class RandomAgent(Agent):
     def select_shuffle(self, valid_options=['Yes', 'No']):
         '''Randomly select whether or not to put the deck in the discard
         pile (i.e. to reshuffle).
+
+        Args:
+            valid_options (list): Should always be a list containing
+            'yes' and 'no'.
         '''
         selected_shuffle = random.choice(valid_options)
         return selected_shuffle

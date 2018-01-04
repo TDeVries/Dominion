@@ -4,20 +4,23 @@ from dominion.cards import *
 
 
 class Player(object):
-    def __init__(self, player_id, agent):
+    def __init__(self, player_id, agent, game):
         '''Initialize a new player, with identifier and starting deck
 
         Args:
             player_id (int): A numerical identifier.
             agent (instance): The agent that will be used to make
             decisions for this player.
+            game (instance): The game that the player is part of.
         '''
         self.player_id = player_id
         self.agent = agent
+        self.game = game  # circular reference?
         self.turn_state = {}
         self.deck = Deck()
         self.hand = Hand(self.deck)
 
+        self.agent.player = self  # circular reference?
         self.hand.draw_hand()
 
     def display_deck(self):

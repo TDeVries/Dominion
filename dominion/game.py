@@ -35,10 +35,11 @@ class Game(object):
 
         players = []
         for player_id, agent in six.iteritems(agents):
-            players.append(Player(player_id=player_id, agent=agent))
+            players.append(Player(player_id=player_id, agent=agent, game=self))
 
         for n in range(len(agents), self.n_players):
-            players.append(Player(player_id='Player ' + str(n), agent=RandomAgent()))
+            players.append(Player(player_id='Player ' + str(n),
+                                  agent=RandomAgent(), game=self))
         self.players = players
 
         self.supply_piles = SupplyPiles(n_players=self.n_players,

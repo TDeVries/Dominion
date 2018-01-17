@@ -52,7 +52,7 @@ def gain_card(player, supply_piles, cost_limit=99, valid_gains=None,
                 break
 
 
-def discard_card(player, valid_discard=None):
+def discard_card(player, valid_discard=None, optional=False):
     '''The player selects a card to discard. It is moved from their hand
     to the discard pile.
 
@@ -60,6 +60,8 @@ def discard_card(player, valid_discard=None):
         player (instance): The player who discards a card.
         valid_discard (list): List of card names that can be discarded.
         If None, all cards in the player's hand are valid. Default: None
+        optional (bool): Indicates whether the player has the option to
+        not discard a card.
     '''
     if valid_discard is None:
         valid_discard = []
@@ -67,7 +69,13 @@ def discard_card(player, valid_discard=None):
             if card.name not in valid_discard:
                 valid_discard.append(card.name)
 
+    if optional:
+        valid_discard.insert(0, 'end_discard_phase')
+
     selected_discard = player.agent.select_discard(valid_discard=valid_discard)
+
+    if selected_discard == 'end_discard_phase':
+        return 'end_discard_phase'
 
     for card in player.hand.hand:
         if card.name == selected_discard:
@@ -75,14 +83,18 @@ def discard_card(player, valid_discard=None):
             player.deck.discard_pile.append(card)
             break
 
+    return card
 
-def trash_card(player, valid_trash=None):
+
+def trash_card(player, valid_trash=None, optional=False):
     '''The player selects a card to trash. It is removed from the game.
 
     Args:
         player (instance): The player who trashes a card.
         valid_trash (list): List of card names that can be trashed. If
         None, all cards in the player's hand are valid. Default: None
+        optional (bool): Indicates whether the player has the option to
+        not trash a card.
 
     Return:
         card (instance): The card that was trashed.
@@ -93,7 +105,13 @@ def trash_card(player, valid_trash=None):
             if card.name not in valid_trash:
                 valid_trash.append(card.name)
 
+    if optional:
+        valid_trash.insert(0, 'end_trash_phase')
+
     selected_trash = player.agent.select_trash(valid_trash=valid_trash)
+
+    if selected_trash == 'end_trash_phase':
+        return 'end_trash_phase'
 
     for card in player.hand.hand:
         if card.name == selected_trash:
@@ -198,11 +216,13 @@ class Cellar(object):
             game (instance): The current game.
             player (instance): The player who played the card
         '''
-        valid_n = range(len(player.hand.hand) + 1)
-        n = player.agent.select_n_discard(valid_n=valid_n)
+        discarded_card = None
+        n = 0
 
-        for i in range(n):
-            discard_card(player=player)
+        while discarded_card != 'end_discard_phase':
+            discarded_card = discard_card(player=player, optional=True)
+            if discarded_card != 'end_discard_phase':
+                n += 1
 
         for i in range(n):
             player.hand.draw_card()
@@ -223,11 +243,11 @@ class Chapel(object):
             game (instance): The current game.
             player (instance): The player who played the card
         '''
-        valid_n = range(min(len(player.hand.hand) + 1, 5))
-        n = player.agent.select_n_trash(valid_n=valid_n)
+        for i in range(4):
+            trashed_card = trash_card(player=player, optional=True)
 
-        for i in range(n):
-            trash_card(player=player)
+            if trashed_card == 'end_trash_phase':
+                break
 
 
 class Moat(object):
@@ -381,7 +401,7 @@ class Militia(object):
             if player is not player_who_played_the_card:
                 if successful_attack(player=player):
                     while len(player.hand.hand) > 3:
-                        discard_card(player=player)
+                        discard_card(player=player, optional=False)
 
 
 class Moneylender(object):
@@ -685,13 +705,16 @@ class Mine(object):
                 valid_trash.append(card.name)
 
         if len(valid_trash) > 0:
-            trashed_card = trash_card(player=player, valid_trash=valid_trash)
+            trashed_card = trash_card(player=player, valid_trash=valid_trash,
+                                      optional=True)
 
-            valid_gains = ['Copper', 'Silver', 'Gold']
-            cost_limit = trashed_card.cost + 3
-            gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
-                      cost_limit=cost_limit, valid_gains=valid_gains,
-                      destination='hand')
+            if trashed_card != 'end_trash_phase':
+
+                valid_gains = ['Copper', 'Silver', 'Gold']
+                cost_limit = trashed_card.cost + 3
+                gain_card(player=player, supply_piles=game.supply_piles.supply_piles,
+                          cost_limit=cost_limit, valid_gains=valid_gains,
+                          destination='hand')
 
 
 class Witch(object):

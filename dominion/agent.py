@@ -129,12 +129,6 @@ class Agent(object):
     def select_trash(self, valid_trash):
         raise NotImplementedError
 
-    def select_n_discard(self, valid_n):
-        raise NotImplementedError
-
-    def select_n_trash(self, valid_n):
-        raise NotImplementedError
-
     def select_shuffle(self, valid_options=['Yes', 'No']):
         raise NotImplementedError
 
@@ -218,12 +212,6 @@ class HMIAgent(Agent):
     def select_trash(self, valid_trash):
         return _user_select_from_list('trash', valid_trash)
 
-    def select_n_discard(self, valid_n):
-        return _user_select_from_list('number of cards to discard', valid_n)
-
-    def select_n_trash(self, valid_n):
-        return _user_select_from_list('number of cards to trash', valid_n)
-
     def select_shuffle(self, valid_options=['Yes', 'No']):
         return _user_select_from_list('shuffle deck', valid_options)
 
@@ -279,26 +267,6 @@ class RandomAgent(Agent):
         '''
         selected_trash = random.choice(valid_trash)
         return selected_trash
-
-    def select_n_discard(self, valid_n):
-        '''Randomly select a number of cards to discard
-
-        Args:
-            valid_n (list): Contains the options for the number of cards
-            to discard.
-        '''
-        selected_n = random.choice(valid_n)
-        return selected_n
-
-    def select_n_trash(self, valid_n):
-        '''Randomly select a number of cards to trash
-
-        Args:
-            valid_n (list): Contains the options for the number of cards
-            to trash.
-        '''
-        selected_n = random.choice(valid_n)
-        return selected_n
 
     def select_shuffle(self, valid_options=['Yes', 'No']):
         '''Randomly select whether or not to put the deck in the discard
